@@ -373,6 +373,18 @@ impl<'de> Visitor<'de> for StringVisitor {
         formatter.write_str("a string")
     }
 
+    // Rust requires that all keys have the same type.  Thus, after serde-json's
+    // KeyClassifier converts the first integer key to a string, all subsequent keys are
+    // handled by this StringVisitor.  And so, we need to have StringVisitor
+    // convert subsequent integers to strings.
+    fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        let v = format!("{}", v);
+        Ok(v.to_owned())
+    }
+
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
         E: Error,
